@@ -6,61 +6,138 @@
   <title>ZIP Code Zone Lookup Tool</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      margin: 40px;
-      background: #f9f9f9;
-    }
-    h2 {
+      background: #f5efea;
+      font-family: 'Segoe UI', 'Arial', sans-serif;
+      margin: 0;
+      min-height: 100vh;
       color: #333;
     }
-    label {
-      font-weight: bold;
+    .almanac-container {
+      background: #fff;
+      margin: 40px auto;
+      border-radius: 15px;
+      box-shadow: 0 8px 32px rgba(173,42,36,0.1), 0 1.5px 4px rgba(0,0,0,0.09);
+      padding: 32px 24px 28px 24px;
+      max-width:440px;
+      min-width: 320px;
+      transition: box-shadow .2s;
+      border: 3px solid #f1efef;
     }
-    input {
-      padding: 6px 8px;
-      margin: 5px 10px 15px 5px;
-      width: 150px;
-      font-size: 1em;
+    .almanac-title {
+      margin-top: 0;
+      letter-spacing: 2px;
+      text-align: center;
+      color: #ad2a24;
+      font-size: 2rem;
+      margin-bottom: 20px;
+      font-weight: bold;
+      font-family: 'Segoe UI Semibold', 'Arial', sans-serif;
+      text-shadow: 0 2px 8px #c2c2c29e;
+    }
+    label {
+      font-weight: 600;
+      color: #ad2a24;
+      display: block;
+      margin-bottom: 10px;
+      font-size: 1.02rem;
+      letter-spacing: 1px;
+    }
+    input[type="text"] {
+      padding: 9px 12px;
+      border: 2px solid #ad2a24;
+      border-radius: 8px;
+      font-size: 1rem;
+      width:180px;
+      outline: none;
+      transition: border-color 0.2s;
+      margin-right: 6px;
+      margin-bottom: 16px;
+      background: #f9f3f1;
+    }
+    input[type="text"]:focus {
+      border-color: #791914 !important;
+      background: #fcf7f6;
     }
     button {
-      padding: 6px 12px;
-      font-size: 1em;
+      padding: 9px 22px;
+      border: none;
+      border-radius: 8px;
+      background: #ad2a24;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 600;
       cursor: pointer;
+      box-shadow: 0 2px 8px rgba(173,42,36,0.11);
+      margin-bottom: 12px;
+      transition: background .18s;
     }
-    table {
-      margin-top: 20px;
-      border-collapse: collapse;
-      width: 350px;
-      background: white;
-    }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 10px;
-      text-align: center;
-    }
-    th {
-      background-color: #007BFF;
-      color: white;
+    button:hover {
+      background: #791914;
     }
     #resultArea {
-      margin-top: 15px;
+      margin-top: 20px;
+    }
+    table {
+      margin: 0 auto;
+      margin-top: 12px;
+      border-collapse: separate;
+      border-spacing: 0;
+      width: 98%;
+      box-shadow: 0 2px 12px 0 #ad2a2439;
+      border-radius: 15px 15px 0 0;
+      overflow: hidden;
+      background: #fff;
+    }
+    th, td {
+      padding: 13px 10px;
+      text-align: center;
+      font-size: 1rem;
+      border-bottom: 1.5px solid #f6d9d4;
+    }
+    th {
+      background: #ad2a24;
+      color: #fff;
+      font-size: 1.05rem;
+      font-weight: 600;
+      border-bottom: 2px solid #f7d0cb;
+    }
+    tr:last-child td {
+      border-bottom: none;
     }
     .no-result {
-      color: red;
+      color: #ad2a24;
       font-weight: bold;
+      background: #f9f3f1;
+      padding: 16px;
+      border-radius: 9px;
+      text-align: center;
+      margin-top: 8px;
+      font-size: 1.05rem;
+      border: 1.5px solid #ad2a24;
+      max-width: 340px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    @media (max-width: 500px) {
+      .almanac-container {
+        max-width: 96vw;
+        padding: 10vw 4vw 5vw 4vw;
+        min-width: unset;
+      }
+      table {
+        width: 99vw;
+        font-size: .95rem;
+      }
     }
   </style>
 </head>
 <body>
-  <div id="container"></div>
-
+  <div class="almanac-container" id="container"></div>
   <script>
-    // Create the container div to hold the tool content dynamically
+    // Insert dynamic HTML using innerHTML as per requirements
     const container = document.getElementById('container');
-
-    // Inject HTML into container using innerHTML
     container.innerHTML = `
-      <h2>ZIP Code Zone Lookup Tool</h2>
+      <h2 class="almanac-title">ZIP Code Zone Lookup</h2>
       <label for="zipcodeInput">Enter ZIP Code:</label>
       <input type="text" id="zipcodeInput" placeholder="e.g. 1001" maxlength="10" />
       <button id="lookupBtn">Lookup</button>
@@ -70,8 +147,6 @@
     (async function() {
       const dataUrl = 'https://raw.githubusercontent.com/Jayanthi-17/Zipcodes.json/main/DATA.json';
       let zipData = [];
-
-      // Fetch the JSON data once on page load
       try {
         const response = await fetch(dataUrl);
         if (!response.ok) throw new Error('Network response was not ok');
@@ -90,14 +165,10 @@
       lookupBtn.addEventListener('click', () => {
         const userZip = zipcodeInput.value.trim();
         if (!userZip) {
-          resultArea.innerHTML = `<p class="no-result">Please enter a ZIP code.</p>`;
+          resultArea.innerHTML = `<div class="no-result">Please enter a ZIP code.</div>`;
           return;
         }
-
-        // Normalize ZIP codes by zero-padding to 5 digits
         const inputZip = userZip.padStart(5, '0');
-
-        // Find matching entry ignoring leading zeros differences
         const foundEntry = zipData.find(entry => {
           const entryZip = entry.zipcode.toString().padStart(5, '0');
           return entryZip === inputZip;
@@ -107,7 +178,11 @@
           resultArea.innerHTML = `
             <table>
               <thead>
-                <tr><th>ZIP Code</th><th>Zone</th><th>Temperature Range</th></tr>
+                <tr>
+                  <th>ZIP Code</th>
+                  <th>Zone</th>
+                  <th>Temperature Range</th>
+                </tr>
               </thead>
               <tbody>
                 <tr>
@@ -119,7 +194,14 @@
             </table>
           `;
         } else {
-          resultArea.innerHTML = `<p class="no-result">No data found for ZIP code: ${userZip}</p>`;
+          resultArea.innerHTML = `<div class="no-result">No data found for ZIP code: ${userZip}</div>`;
+        }
+      });
+
+      // Optional: allow Enter key for input
+      zipcodeInput.addEventListener('keyup', function(event) {
+        if (event.key === "Enter") {
+          lookupBtn.click();
         }
       });
     })();
